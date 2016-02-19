@@ -1,7 +1,49 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include "common.h"
 #include "cmdargs.h"
+
+int daemonize() {
+    pid_t pid = fork();
+    if (pid < 0) {
+        printf("Failed to fork: %d\n", strerror(errno));
+        return -1;
+    } else if (pid > 0) {
+        printf("Daemon process with pid %d created.\n", pid);
+        exit(0);
+    } else {
+        /* child (daemon) process is here */
+
+        /* Change the file mode mask */
+        umask(0);         
+
+        /* Create a new SID for the child process */
+        pid_t sid = setsid();
+        if (sid < 0) {
+            printf("Failed to set the session id: %s\n", strerror(errno));
+            return -1;
+        }
+            
+        /* Change the current working directory */
+        if ((chdir("/")) < 0) {
+            printf("Failed to change the current working directory: %s\n",
+                strerror(errno));
+            return -1;
+        }
+            
+        /* Close out the standard file descriptors */
+        close(STDIN_FILENO);
+        close(STDOUT_FILENO);
+        close(STDERR_FILENO);
+    }
+}
 
 int main(int argc, char **argv) {
 	printf("Starting Simple Http Server...\n");
@@ -15,7 +57,12 @@ int main(int argc, char **argv) {
     print_server_parameters(&server_parameters);
     printf("\n");
 
-    
+    if (daemonize() < 0) {
+        printf("Failed to become daemon process.\n");
+        goto exit;
+    }
+
+    sleep(10);
 
 exit:
 	return 0;
