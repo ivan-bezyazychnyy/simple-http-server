@@ -9,6 +9,11 @@
 
 #include "common.h"
 #include "cmdargs.h"
+#include "logger.h"
+
+#define LOG_FILE "/home/ivan/simple_http_server.log"
+
+logger_t logger;
 
 int daemonize() {
     pid_t pid = fork();
@@ -62,7 +67,18 @@ int main(int argc, char **argv) {
         goto exit;
     }
 
+    if (logger_init(&logger, LOG_FILE) < 0) {
+        exit(-2);
+    }
+
+    to_log(&logger, "Simple http server with pid %d started logging.", getpid());
+
+
     sleep(10);
+
+exit_with_logging:
+    logger_close(&logger);
+
 
 exit:
 	return 0;

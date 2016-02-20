@@ -13,6 +13,7 @@ include_directories("include")
 set(SOURCE_FILES
     src/main.c
     src/cmdargs.c
+    src/logger.c
 )
 
 add_executable (simple_http_server ${SOURCE_FILES})
