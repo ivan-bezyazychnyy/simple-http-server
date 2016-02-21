@@ -10,7 +10,7 @@
 #include <common.h>
 
 int parse_arguments(int argc, char **argv,
-                    struct server_parameters * server_parameters) {
+                    server_parameters * server_parameters) {
 
     /* Assign default values fitst */
     strcpy(server_parameters->ip, DEFAULT_IP);
@@ -49,7 +49,7 @@ int parse_arguments(int argc, char **argv,
     return 0;
 }
 
-void print_server_parameters(struct server_parameters * server_parameters) {
+void print_server_parameters(server_parameters * server_parameters) {
     printf("ip=%s, port=%d, dir=%s",
         server_parameters->ip, server_parameters->port,
         server_parameters->directory);

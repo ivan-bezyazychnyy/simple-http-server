@@ -33,6 +33,8 @@ void to_log(logger_t *logger, const char * format, ... ) {
     vfprintf(logger->log_file, format, args);
     va_end(args);
 
+    fflush(logger->log_file);
+
     pthread_mutex_unlock (&logger->mutex);
 }
 
