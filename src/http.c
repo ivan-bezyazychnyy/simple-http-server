@@ -11,8 +11,8 @@
 
 extern logger_t logger;
 
-char * TEMPLATE_200 = "HTTP/1.0 200 OK\r\n\r\n";
-char * TEMPLATE_404 = "HTTP/1.0 404 Not Found\r\n";
+char * TEMPLATE_200 = "HTTP/1.0 200 OK\r\nContent-Type: text/html\r\n\r\n";
+char * TEMPLATE_404 = "HTTP/1.0 404 Not Found\r\nContent-Type: text/html\r\n\r\n";
 
 char * create_404_response() {
 	char * response = (char *) malloc(strlen(TEMPLATE_404) + 1);
