@@ -11,8 +11,13 @@
 
 extern logger_t logger;
 
-char * TEMPLATE_200 = "HTTP/1.0 200 OK\r\nContent-Type: text/html\r\n\r\n";
-char * TEMPLATE_404 = "HTTP/1.0 404 Not Found\r\nContent-Type: text/html\r\n\r\n";
+char * TEMPLATE_200 =
+	"HTTP/1.0 200 OK\r\n"
+	"Content-length: %d\r\n"
+	"Connection: close\r\n"
+	"Content-Type: text/html\r\n\r\n";
+char * TEMPLATE_404 = "HTTP/1.0 404 Not Found\r\n"
+	"Content-Type: text/html\r\n\r\n";
 
 char * create_404_response() {
 	char * response = (char *) malloc(strlen(TEMPLATE_404) + 1);
@@ -49,8 +54,11 @@ char * handle_http_request(char * request, int request_length,
     	return response;
     }
 
-    char * response = (char *) malloc(file_size + strlen(TEMPLATE_200) + 100);
-    strcpy(response, TEMPLATE_200);
+	char * header = (char *) malloc(strlen(TEMPLATE_200) + 100);
+	sprintf(header, TEMPLATE_200, file_size);
+    char * response = (char *) malloc(file_size + strlen(header) + 100);
+    strcpy(response, header);
+    free(header);
     int pos = strlen(response);
     int c;
     while ((c = fgetc(file)) != EOF) {

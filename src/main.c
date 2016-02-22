@@ -22,7 +22,7 @@
 #include "logger.h"
 #include "http.h"
 
-#define LOG_FILE "/home/box/simple_http_server.log"
+#define LOG_FILE "/home/box/final/simple_http_server.log"
 
 logger_t logger;
 
