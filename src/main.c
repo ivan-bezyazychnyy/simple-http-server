@@ -120,6 +120,12 @@ void accept_clients_loop(server_parameters * parameters) {
         to_log(&logger, "Failed to convert address.\n");
         goto close_master_socket;
     }
+    int yes = 1;
+    if (setsockopt(master_socket, SOL_SOCKET, SO_REUSEADDR, &yes,
+        sizeof(int)) == -1) {
+            to_log(&logger, "Failed setsockopt %s\n", strerror(errno));
+            goto close_master_socket;
+        }
     if (bind(master_socket, (struct sockaddr *) &sa, sizeof(sa)) < 0) {
         to_log(&logger, "Failed to bind: %s\n", strerror(errno));
         goto close_master_socket;
