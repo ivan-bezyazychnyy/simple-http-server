@@ -1,5 +1,5 @@
-#ifndef LOGGER_CPP
-#define LOGGER_CPP
+#ifndef LOGGER_C
+#define LOGGER_C
 
 #include "logger.h"
 
@@ -38,4 +38,4 @@ void to_log(logger_t *logger, const char * format, ... ) {
     pthread_mutex_unlock (&logger->mutex);
 }
 
-#endif /* LOGGER_CPP */
+#endif /* LOGGER_C */

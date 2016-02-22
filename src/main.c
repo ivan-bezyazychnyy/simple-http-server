@@ -1,4 +1,5 @@
 #define _BSD_SOURCE
+#define _XOPEN_SOURCE
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,10 +14,13 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <signal.h>
+#include <sys/wait.h>
 
 #include "common.h"
 #include "cmdargs.h"
 #include "logger.h"
+#include "http.h"
 
 #define LOG_FILE "/home/ivan/simple_http_server.log"
 
@@ -57,15 +61,7 @@ int daemonize() {
     }
 }
 
-char * process_request(char * request, int request_length,
-                       int * response_length) {
-    char * response = (char *) malloc(request_length * sizeof(char));
-    strncpy(response, request, request_length);
-    *response_length = request_length;
-    return response;
-}
-
-void client_handler(int client_socket) {
+void client_handler(int client_socket, server_parameters * parameters) {
     to_log(&logger, "Client handler started: Worker %d\n", getpid());
 
     char buffer[1024];
@@ -81,10 +77,12 @@ void client_handler(int client_socket) {
             to_log(&logger, "Worker %d: received request: %s",
                 getpid(), buffer);
             int response_length = 0;
-            char * response = process_request(buffer, read, &response_length);
+            char * response = handle_http_request(buffer, read, &response_length,
+                parameters->directory);
             to_log(&logger, "Worker %d: sending response: %s",
                 getpid(), response);
             send(client_socket, response, response_length, MSG_NOSIGNAL);
+            free(response);
             close(client_socket);
             break;
         }
@@ -92,7 +90,7 @@ void client_handler(int client_socket) {
     exit(0);
 }
 
-void run_client_handler(int client_socket) {
+void run_client_handler(int client_socket, server_parameters * parameters) {
     pid_t pid = fork();
     if (pid < 0) {
         to_log(&logger, "Failed to fork client handler process:\n",
@@ -102,7 +100,7 @@ void run_client_handler(int client_socket) {
         return;
     } else {
         // this is a process to handle client
-        client_handler(client_socket);
+        client_handler(client_socket, parameters);
     }
 }
 
@@ -145,7 +143,7 @@ void accept_clients_loop(server_parameters * parameters) {
         int client_socket = accept(master_socket, (struct sockaddr*) &client_addr, &client_addr_len);
         if (client_socket > 0) {
             to_log(&logger, "Accepted a new connection\n");
-            run_client_handler(client_socket);
+            run_client_handler(client_socket, parameters);
             close(client_socket);
         } else {
             if (errno == EAGAIN) {
@@ -166,6 +164,10 @@ close_master_socket:
     } else {
         to_log(&logger, "Closed master socket\n");
     }
+}
+
+void sigchld_handler(int s) {
+    while(waitpid(-1, NULL, WNOHANG) > 0);
 }
 
 int main(int argc, char **argv) {
@@ -190,6 +192,17 @@ int main(int argc, char **argv) {
     }
 
     to_log(&logger, "Simple http server with pid %d started logging.\n", getpid());
+
+    /* lets remove dead processes */
+    struct sigaction sa;
+    sa.sa_handler = sigchld_handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART;
+    if (sigaction(SIGCHLD, &sa, NULL) == -1) {
+        to_log(&logger, "Failed to set up SIGCHLD handler: %d\n",
+            strerror(errno));
+        goto exit_with_logging;
+    }
 
     accept_clients_loop(&server_parameters);
 

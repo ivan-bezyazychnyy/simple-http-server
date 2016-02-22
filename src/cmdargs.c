@@ -1,5 +1,5 @@
-#ifndef CMDARGS_CPP
-#define CMDARGS_CPP
+#ifndef CMDARGS_C
+#define CMDARGS_C
 
 #include <stdio.h>
 #include <string.h>
@@ -55,4 +55,4 @@ void print_server_parameters(server_parameters * server_parameters) {
         server_parameters->directory);
 }
 
-#endif /* CMDARGS_CPP */
+#endif /* CMDARGS_C */
