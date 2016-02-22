@@ -23,6 +23,6 @@ set(HTTP_TEST_SOURCE_FILES
     src/http_test.c
 )
 
-add_executable (simple_http_server ${SOURCE_FILES})
+add_executable (final ${SOURCE_FILES})
 
 add_executable (http_test ${HTTP_TEST_SOURCE_FILES})
