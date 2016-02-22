@@ -13,7 +13,7 @@ extern logger_t logger;
 
 char * TEMPLATE_200 =
 	"HTTP/1.0 200 OK\r\n"
-	"Content-length: %d\r\n"
+//	"Content-length: %d\r\n"
 	"Connection: close\r\n"
 	"Content-Type: text/html\r\n\r\n";
 char * TEMPLATE_404 = "HTTP/1.0 404 Not Found\r\n"
@@ -32,6 +32,13 @@ char * handle_http_request(char * request, int request_length,
 	char cmd[100];
 	char url[200];
 	char full_path[1024];
+
+	for (int i = 0; i < request_length; ++i) {
+		if (request[i] == '?') {
+			request[i] = '\0';
+		}
+	}
+
 	sscanf(request, "%s %s", &cmd, &url);
 	strcpy(full_path, root_dir);
 	strcat(full_path, url);
@@ -55,7 +62,7 @@ char * handle_http_request(char * request, int request_length,
     }
 
 	char * header = (char *) malloc(strlen(TEMPLATE_200) + 100);
-	sprintf(header, TEMPLATE_200, file_size);
+	sprintf(header, TEMPLATE_200);
     char * response = (char *) malloc(file_size + strlen(header) + 100);
     strcpy(response, header);
     free(header);

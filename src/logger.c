@@ -1,7 +1,7 @@
 #ifndef LOGGER_C
 #define LOGGER_C
 
-#define NO_LOG
+// #define NO_LOG
 
 #include "logger.h"
 
